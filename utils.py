@@ -67,3 +67,7 @@ class Evaluator():
             logidx = rewards.index(max(rewards))
             self.logger.info(f"sample output cot with the best reward:\n{prompts[logidx]}\n{completions[logidx]}")
         return rewards
+
+    @property
+    def __name__(self):
+        return "Evaluator"

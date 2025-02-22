@@ -27,6 +27,7 @@ def train(args):
     training_args = GRPOConfig(
         output_dir="./logs",
         logging_steps=10,
+        max_completion_length=1024,
         per_device_train_batch_size=2,
         bf16=True,
         num_generations=4,

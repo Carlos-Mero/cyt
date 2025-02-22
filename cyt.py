@@ -4,6 +4,7 @@ import os
 
 from utils import Evaluator, load_datasets
 from trl import GRPOConfig, GRPOTrainer
+from datasets import Dataset
 
 def setup_logging():
     logging.basicConfig(
@@ -21,6 +22,8 @@ def train(args):
         min_clength=args.minl,
         stepsize=args.step_size)
     ds = load_datasets(args.datasets)
+    ds = ds.add_column("prompt", [[{'role': 'system', 'content': "Please reason step by step, and put your final answer within \\boxed{{}}."},
+                                  {'role': 'user', 'content': e['problem']}] for e in ds])
     training_args = GRPOConfig(
         output_dir="./logs",
         logging_steps=10,

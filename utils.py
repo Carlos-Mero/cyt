@@ -2,6 +2,7 @@ from math_verify import parse, verify
 from typing import Iterable, Any
 import json
 import logging
+from accelerate import Accelerator
 
 from datasets import Dataset, concatenate_datasets
 
@@ -52,6 +53,7 @@ class Evaluator():
         self.max_clength = max_clength
         self.stepsize = stepsize
         self.min_clength = min_clength
+        self.accelerator = Accelerator()
 
     def __call__(self, prompts, completions, answer, **kwargs):
         completions = [completion if isinstance(completion, str) else completion[0]['content'] for completion in completions]

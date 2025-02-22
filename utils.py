@@ -54,6 +54,7 @@ class Evaluator():
         self.min_clength = min_clength
 
     def __call__(self, prompts, completions, answer, **kwargs):
+        completions = [completion if isinstance(completion, str) else completion[0]['content'] for completion in completions]
         avg_len = (sum(len(s) for s in completions) / len(completions))
         self.max_clength = int(avg_len)
         golds = [parse(ans) for ans in answer]

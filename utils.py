@@ -53,7 +53,7 @@ class Evaluator():
         self.stepsize = stepsize
         self.min_clength = min_clength
 
-    def __call__(self, prompts, completions, answer):
+    def __call__(self, prompts, completions, answer, **kwargs):
         avg_len = (sum(len(s) for s in completions) / len(completions))
         self.max_clength = int(avg_len)
         golds = [parse(ans) for ans in answer]

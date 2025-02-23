@@ -29,10 +29,11 @@ def train(args):
         logging_steps=10,
         max_completion_length=args.maxl,
         per_device_train_batch_size=args.per_device_batch_size,
-        bf16=True,
         num_generations=args.num_generations,
         save_steps=args.save_steps,
         num_train_epochs=args.epoch,
+        bf16=True,
+        use_vllm=True
     )
     trainer = GRPOTrainer(
         model = args.model,

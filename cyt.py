@@ -4,7 +4,7 @@ import os
 
 from utils import Evaluator, load_datasets
 from trl import GRPOConfig, GRPOTrainer
-from transformers import AutoModelForCausalLM
+from transformers import AutoModelForCausalLM, AutoTokenizer
 from bitsandbytes.optim import Adam8bit
 from datasets import Dataset
 
@@ -19,11 +19,15 @@ def setup_logging():
     )
 
 def train(args):
+
+    model = AutoModelForCausalLM.from_pretrained(args.model)
+    tokenizer = AutoTokenizer.from_pretrained(args.model)
+
     evaluator = Evaluator(
         max_clength=args.maxl,
         min_clength=args.minl,
         stepsize=args.step_size,
-        ema=args.ema)
+        ema=args.ema, tokenizer=tokenizer)
     ds = load_datasets(args.datasets)
     ds = ds.add_column("prompt", [[{'role': 'system', 'content': "Please reason step by step, and put your final answer within \\boxed{{}}."},
                                   {'role': 'user', 'content': e['problem']}] for e in ds])
@@ -39,11 +43,11 @@ def train(args):
         # use_vllm=True
     )
 
-    model = AutoModelForCausalLM.from_pretrained(args.model)
     optimizer = Adam8bit(model.parameters(), lr=training_args.learning_rate)
 
     trainer = GRPOTrainer(
         model = model,
+        processing_class=tokenizer,
         reward_funcs=evaluator,
         args=training_args,
         train_dataset=ds

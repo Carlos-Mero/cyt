@@ -48,17 +48,18 @@ def load_datasets(dspaths):
     return concatenate_datasets(dss)
 
 class Evaluator():
-    def __init__(self, max_clength: int = 1024, stepsize: int = 2, min_clength: int = 512, ema: float = 0.9):
+    def __init__(self, max_clength: int = 1024, stepsize: int = 2, min_clength: int = 512, ema: float = 0.9, tokenizer = None):
         self.logger = logging.getLogger("evaluator")
         self.max_clength = max_clength
         self.ema = ema
         self.stepsize = stepsize
         self.min_clength = min_clength
+        self.tokenizer = tokenizer
         self.accelerator = Accelerator()
 
     def __call__(self, prompts, completions, answer, **kwargs):
         completions = [completion if isinstance(completion, str) else completion[0]['content'] for completion in completions]
-        avg_len = (sum(len(s) for s in completions) / len(completions))
+        avg_len = (sum(len(self.tokenizer.tokenize(s)) for s in completions) / len(completions))
         self.max_clength = int(self.max_clength * self.ema + avg_len * (1.0 - self.ema))
         len_modifier = [1.0 if len(c) <= self.max_clength else 0.0 for c in completions]
         golds = [parse(ans) for ans in answer]

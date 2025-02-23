@@ -59,9 +59,11 @@ class Evaluator():
         completions = [completion if isinstance(completion, str) else completion[0]['content'] for completion in completions]
         avg_len = (sum(len(s) for s in completions) / len(completions))
         self.max_clength = int(avg_len)
+        len_modifier = [1.0 if len(c) <= self.max_clength else 0.0 for c in completions]
         golds = [parse(ans) for ans in answer]
-        answers = [parse(find_boxed(completion)) if len(completion) <= self.max_clength else parse('') for completion in completions]
-        rewards = [1.0 if verify(g, a) else 0.0 for (g, a) in zip(golds, answers)]
+        answers = [parse(find_boxed(completion)) for completion in completions]
+        rewards = [1.0 if verify(g, a) else -1.0 for (g, a) in zip(golds, answers)]
+        rewards = [r * lg for (r, lg) in zip(rewards, len_modifier)]
         self.logger.info(f"rewards: {rewards}")
         if self.accelerator.is_main_process:
             logidx = rewards.index(max(rewards))

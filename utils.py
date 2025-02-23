@@ -48,9 +48,10 @@ def load_datasets(dspaths):
     return concatenate_datasets(dss)
 
 class Evaluator():
-    def __init__(self, max_clength: int = 1024, stepsize: int = 2, min_clength: int = 512):
-        self.logger = logging.getLogger(__name__)
+    def __init__(self, max_clength: int = 1024, stepsize: int = 2, min_clength: int = 512, ema: float = 0.9):
+        self.logger = logging.getLogger("evaluator")
         self.max_clength = max_clength
+        self.ema = ema
         self.stepsize = stepsize
         self.min_clength = min_clength
         self.accelerator = Accelerator()
@@ -58,7 +59,7 @@ class Evaluator():
     def __call__(self, prompts, completions, answer, **kwargs):
         completions = [completion if isinstance(completion, str) else completion[0]['content'] for completion in completions]
         avg_len = (sum(len(s) for s in completions) / len(completions))
-        self.max_clength = int(avg_len)
+        self.max_clength = int(self.max_clength * self.ema + avg_len * (1.0 - self.ema))
         len_modifier = [1.0 if len(c) <= self.max_clength else 0.0 for c in completions]
         golds = [parse(ans) for ans in answer]
         answers = [parse(find_boxed(completion)) for completion in completions]
@@ -68,6 +69,7 @@ class Evaluator():
         if self.accelerator.is_main_process:
             logidx = rewards.index(max(rewards))
             self.logger.info(f"sample output cot with the best reward:\n{prompts[logidx]}\n{completions[logidx]}")
+            self.logger.info(f"current self max length: {self.max_clength}")
         return rewards
 
     @property

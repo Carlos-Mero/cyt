@@ -22,7 +22,8 @@ def train(args):
     evaluator = Evaluator(
         max_clength=args.maxl,
         min_clength=args.minl,
-        stepsize=args.step_size)
+        stepsize=args.step_size,
+        ema=args.ema)
     ds = load_datasets(args.datasets)
     ds = ds.add_column("prompt", [[{'role': 'system', 'content': "Please reason step by step, and put your final answer within \\boxed{{}}."},
                                   {'role': 'user', 'content': e['problem']}] for e in ds])
@@ -63,6 +64,7 @@ def main():
     parser.add_argument('-b', '--per_device_batch_size', type=int, default=2, help="The train batch size per device")
     parser.add_argument('-n', '--num_generations', type=int, default=4, help="The number of generations per input prompt")
     parser.add_argument('-e', '--epoch', type=float, default=2.0, help="The training epochs of the datasets")
+    parser.add_argument('--ema', type=float, default=0.9, help="The decrease hyperparameter of the maxl")
 
     args = parser.parse_args()
 

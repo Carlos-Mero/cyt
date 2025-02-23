@@ -4,6 +4,8 @@ import os
 
 from utils import Evaluator, load_datasets
 from trl import GRPOConfig, GRPOTrainer
+from transformers import AutoModelForCausalLM
+from bitsandbytes.optim import Adam8bit
 from datasets import Dataset
 
 def setup_logging():
@@ -33,14 +35,19 @@ def train(args):
         save_steps=args.save_steps,
         num_train_epochs=args.epoch,
         bf16=True,
-        use_vllm=True
+        # use_vllm=True
     )
+
+    model = AutoModelForCausalLM.from_pretrained(args.model)
+    optimizer = Adam8bit(model.parameters(), lr=training_args.learning_rate)
+
     trainer = GRPOTrainer(
-        model = args.model,
+        model = model,
         reward_funcs=evaluator,
         args=training_args,
         train_dataset=ds
     )
+    trainer.optimizer = optimizer
     trainer.train()
 
 def main():

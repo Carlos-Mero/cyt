@@ -65,7 +65,7 @@ class Evaluator():
         golds = [parse(ans) for ans in answer]
         answers = [parse(find_boxed(completion)) for completion in completions]
         rewards = [1.0 if verify(g, a) else -1.0 for (g, a) in zip(golds, answers)]
-        rewards = [r * lg for (r, lg) in zip(rewards, len_modifier)]
+        rewards = [r + lg for (r, lg) in zip(rewards, len_modifier)]
         self.logger.info(f"rewards: {rewards}")
         if self.accelerator.is_main_process:
             logidx = rewards.index(max(rewards))

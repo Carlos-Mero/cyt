@@ -51,7 +51,7 @@ def load_datasets(dspaths):
             ds = Dataset.from_list([e for e in load_jsonl(dspath)])
             dss.append(ds)
         elif dspath == "openai/gsm8k":
-            ds = load_dataset(dspath)
+            ds = (load_dataset(dspath))['main']['train']
             ds = ds.map(extract_ans_gsm8k)
             ds = ds.rename_column('question', 'problem')
         else:

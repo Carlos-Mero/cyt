@@ -54,6 +54,7 @@ def load_datasets(dspaths):
             ds = (load_dataset(dspath, 'main'))['train']
             ds = ds.map(extract_ans_gsm8k)
             ds = ds.rename_column('question', 'problem')
+            dss.append(ds)
         else:
             raise NotImplementedError("Unknown dataset!")
     return concatenate_datasets(dss)
